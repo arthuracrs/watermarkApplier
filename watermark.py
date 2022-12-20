@@ -1,35 +1,26 @@
-import os
 from PIL import Image
 
-def applyWatermark(im1, im2):
-    im1W = im1.size[0]
-    im1H = im1.size[1]
 
-    im2 = im2.resize((im1W, im1H))
+def applyWatermark(photo, mark):
+    rotate = False
+    photoW = photo.size[0]
+    photoH = photo.size[1]
 
-    im2W = im2.size[0]
-    im2H = im2.size[1]
+    if photoH >= photoW:
+        rotate = True
+        photo = photo.rotate(90,  expand = 1)
+        photoW = photo.size[0]
+        photoH = photo.size[1]
 
-    im1.paste(im2, (int((im1W/2 - im2W/2)),
-              int((im1H/2 - im2H/2))), im2)
+    mark = mark.resize((photoW, photoH))
 
-    return im1
+    markW = mark.size[0]
+    markH = mark.size[1]
 
-watermarkImagePath = './watermark.png'
-watermarkImage = Image.open(watermarkImagePath).convert("RGBA")
+    photo.paste(mark, (int((photoW/2 - markW/2)),
+              int((photoH/2 - markH/2))), mark)
 
-inputPhotosPath = './inputPhotos'
-outputPhotosPath = './outputPhotos'
+    if rotate:
+        photo = photo.rotate(-90,  expand = 1)
 
-dirsThatShouldExists = [inputPhotosPath, outputPhotosPath]
-
-for dir in dirsThatShouldExists:
-  isExist = os.path.exists(dir)
-  if isExist == False:
-    os.mkdir(dir)
-
-for imagePath in os.listdir(inputPhotosPath):
-    targetImage = Image.open(inputPhotosPath + '/' + imagePath).convert("RGBA")
-    
-    applyWatermark(targetImage, watermarkImage).save(
-        outputPhotosPath + '/' + imagePath, format="png")
+    return photo

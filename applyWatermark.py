@@ -7,26 +7,11 @@ from tkinter import Label
 import os
 from PIL import Image, ImageTk
 from GifFom import GifFom
- 
-watermarkImagePath = 'Selecione o arquivo'
-inputPhotosPath = 'Selecione a pasta'
-outputPhotosPath = 'Selecione a pasta'
+from watermark import applyWatermark
 
-
-def applyWatermark(im1, im2):
-    im1W = im1.size[0]
-    im1H = im1.size[1]
-
-    im2 = im2.resize((im1W, im1H))
-
-    im2W = im2.size[0]
-    im2H = im2.size[1]
-
-    im1.paste(im2, (int((im1W/2 - im2W/2)),
-              int((im1H/2 - im2H/2))), im2)
-
-    return im1
-
+watermarkImagePath = "Selecione o png da marca d'agua"
+inputPhotosPath = 'Selecione uma pasta'
+outputPhotosPath = 'Selecione um pasta'
 
 def loadWaterMarkImage(label):
     global watermarkImagePath
@@ -38,7 +23,7 @@ def loadWaterMarkImage(label):
 
     watermarkImagePath = fd.askopenfilename(
         title='Open a file',
-        initialdir='./',
+        initialdir='../',
         filetypes=filetypes)
     label.config(text=watermarkImagePath)
 
@@ -47,7 +32,7 @@ def loadInputPhotosPath(label):
     global inputPhotosPath
 
     inputPhotosPath = fd.askdirectory(
-        title='Select the input Directory', initialdir='./')
+        title='Selecione a pasta das fotos', initialdir='../')
     label.config(text=inputPhotosPath)
 
 
@@ -55,11 +40,11 @@ def loadOutputPhotosPath(label):
     global outputPhotosPath
 
     outputPhotosPath = fd.askdirectory(
-        title='Select the output Directory', initialdir='./')
+        title="Selecione outra pasta para as fotos com marca d'agua", initialdir='../')
     label.config(text=outputPhotosPath)
 
 
-def apply():
+def apply(gifConclusion):
     global watermarkImagePath
     global inputPhotosPath
     global outputPhotosPath
@@ -76,14 +61,16 @@ def apply():
         messagebox.showerror("Error", "outputPhotosPath")
         return
 
-    watermarkImage = Image.open(watermarkImagePath).convert("RGBA")
+    watermarkImage = Image.open(watermarkImagePath)
 
     for imagePath in os.listdir(inputPhotosPath):
         targetImage = Image.open(
-            inputPhotosPath + '/' + imagePath).convert("RGBA")
+            inputPhotosPath + '/' + imagePath)
 
         applyWatermark(targetImage, watermarkImage).save(
-            outputPhotosPath + '/' + imagePath, format="png")
+            outputPhotosPath + '/' + imagePath, format="jpeg")
+    
+    gifConclusion.animate()
 
 
 def createMainWindow():
@@ -104,7 +91,7 @@ def createMainWindow():
     waterMarkImagePathText.grid(column=1, row=0, sticky=tk.W, padx=5, pady=5)
     loadWaterMarkImageButton = ttk.Button(
         root,
-        text='Select Watermark Image',
+        text='Escolher imagem',
         command=lambda: loadWaterMarkImage(waterMarkImagePathText)
     )
     loadWaterMarkImageButton.grid(column=0, row=0, sticky=tk.W, padx=5, pady=5)
@@ -113,33 +100,32 @@ def createMainWindow():
     loadInputPhotosPathText.grid(column=1, row=1, sticky=tk.W, padx=5, pady=5)
     loadInputPhotosPathButton = ttk.Button(
         root,
-        text='Select input folder',
+        text='Escolher pasta',
         command=lambda: loadInputPhotosPath(loadInputPhotosPathText)
     )
     loadInputPhotosPathButton.grid(
         column=0, row=1, sticky=tk.W, padx=5, pady=5)
 
-    loadOutputPhotosPathText = ttk.Label(root, text=watermarkImagePath)
+    loadOutputPhotosPathText = ttk.Label(root, text=outputPhotosPath)
     loadOutputPhotosPathText.grid(column=1, row=2, sticky=tk.W, padx=5, pady=5)
     loadOutputPhotosPathButton = ttk.Button(
         root,
-        text='Select output folder',
+        text='Escolher pasta',
         command=lambda: loadOutputPhotosPath(loadOutputPhotosPathText)
     )
     loadOutputPhotosPathButton.grid(
         column=0, row=2, sticky=tk.W, padx=5, pady=5)
 
-    applyBUtton = ttk.Button(
-        root,
-        text='Apply',
-        command=apply
-    )
-    applyBUtton.grid(column=1, row=4, sticky=tk.SE, padx=5, pady=5)
-
     label1 = GifFom(root, './jo.gif')
     label1.gifLabel.grid(
         column=1, row=5, sticky=tk.W, padx=5, pady=5)
-    label1.animate()
+
+    applyBUtton = ttk.Button(
+        root,
+        text='Apply',
+        command=lambda: apply(label1)
+    )
+    applyBUtton.grid(column=1, row=4, sticky=tk.SE, padx=5, pady=5)
 
     # run the application
     root.mainloop()
